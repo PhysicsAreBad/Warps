@@ -1,0 +1,6 @@
+prefix: 'Warps >> '
+
+must-be-player: 'You must be a player to use this command!'
+no-permission: ''
+
+wrong-password: 'That is the incorrect password!'

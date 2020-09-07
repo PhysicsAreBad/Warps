@@ -1,0 +1,9 @@
+name: Warps
+version: ${project.version}
+main: me.physicsarebad.warps.Warps
+api-version: 1.16
+authors: [ PhysicsAreBad ]
+description: Demo warps plugin for Senior Team
+commands:
+  warps:
+    aliases: [warp]
