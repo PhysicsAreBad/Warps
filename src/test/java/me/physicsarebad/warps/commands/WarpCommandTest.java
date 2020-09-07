@@ -9,9 +9,9 @@ public class WarpCommandTest {
     public void verifyCommandName() {
         WarpCommand command = new WarpCommand();
         //Check main command
-        assertTrue(command.onCommand(null, null, "warps", new String[0]));
+        assertTrue("Failed to run command when using /warps", command.onCommand(null, null, "warps", new String[0]));
 
         //Check aliases
-        assertTrue(command.onCommand(null, null, "warp", new String[0]));
+        assertTrue("Failed to run command when using /warp", command.onCommand(null, null, "warp", new String[0]));
     }
 }

@@ -1,6 +1,7 @@
 package me.physicsarebad.warps.guis;
 
 import me.physicsarebad.warps.Utils.items.ItemCrafter;
+import me.physicsarebad.warps.Warps;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -14,6 +15,18 @@ import org.bukkit.inventory.Inventory;
 
 public class MainGUI implements Listener {
     private Inventory inv;
+
+    public enum WarpType {
+        PUBLIC("Public "),
+        PRIVATE("Private "),
+        SERVER("Server ");
+
+        public String name;
+
+        WarpType(String name) {
+            this.name = name;
+        }
+    }
 
     public MainGUI() {
         inv = Bukkit.createInventory(null, 9, "Warps");
@@ -40,12 +53,15 @@ public class MainGUI implements Listener {
             switch (e.getRawSlot()) {
                 case 0:
                     ((Player) e.getWhoClicked()).playSound(e.getWhoClicked().getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
+                    Warps.getInstance().getMenu(WarpType.PUBLIC).openInventory(e.getWhoClicked());
                     break;
                 case 4:
                     ((Player) e.getWhoClicked()).playSound(e.getWhoClicked().getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
+                    Warps.getInstance().getMenu(WarpType.SERVER).openInventory(e.getWhoClicked());
                     break;
                 case 8:
                     ((Player) e.getWhoClicked()).playSound(e.getWhoClicked().getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
+                    Warps.getInstance().getMenu(WarpType.PRIVATE).openInventory(e.getWhoClicked());
                     break;
             }
         }
