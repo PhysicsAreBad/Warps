@@ -4,6 +4,7 @@ import me.physicsarebad.warps.commands.WarpCommand;
 import me.physicsarebad.warps.guis.MainGUI;
 import me.physicsarebad.warps.guis.WarpMenu;
 import me.physicsarebad.warps.storage.SQLiteController;
+import me.physicsarebad.warps.storage.Warp;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
@@ -11,6 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 
 public final class Warps extends JavaPlugin {
     private static Warps instance;
@@ -71,5 +73,9 @@ public final class Warps extends JavaPlugin {
 
     public WarpMenu getMenu(MainGUI.WarpType type) {
         return menus.get(type);
+    }
+
+    public List<Warp> getWarps(MainGUI.WarpType type) {
+        return SQLiteController.getWarps(type, databaseFile);
     }
 }
