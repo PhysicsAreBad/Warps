@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -51,7 +52,7 @@ public class WarpMenu implements Listener {
         inv.setItem(53, ItemCrafter.getItem(Material.BARRIER, ChatColor.RED+""+ChatColor.BOLD+"Back"));
 
         for (int i = 0; i < 51; i++) {
-            inv.setItem(i, warpList.get(i).getDisplayItem());
+            inv.setItem(i, warpList.get(i).getDisplayItem((Player) e));
         }
 
         inventoryMap.put(e, inv);
@@ -71,7 +72,7 @@ public class WarpMenu implements Listener {
         inv.setItem(53, ItemCrafter.getItem(Material.BARRIER, ChatColor.RED+""+ChatColor.BOLD+"Back"));
 
         for (int i = 51*page; i <51*(page+1); i++) {
-            inv.addItem(warpList.get(i).getDisplayItem());
+            inv.addItem(warpList.get(i).getDisplayItem((Player) e));
         }
 
         for (int i = 0; i < 51; i++) {
@@ -102,6 +103,16 @@ public class WarpMenu implements Listener {
                 case 53:
                     Warps.getInstance().getMainGUI().openInventory(e.getWhoClicked());
                     break;
+                default:
+                    if (inventoryMap.get(e.getWhoClicked()).getItem(e.getRawSlot()).getType() != Material.GRAY_STAINED_GLASS_PANE) {
+                        if (e.isLeftClick()) {
+                            Warp warp = warpList.get(pageMap.get(e.getWhoClicked()) * 51 + e.getRawSlot());
+                            if (warp.getPassword().equals(null)) {
+                                e.getWhoClicked().closeInventory();
+                                e.getWhoClicked().teleport(warp.getWarpLocation());
+                            }
+                        }
+                    }
             }
         }
     }
