@@ -1,6 +1,7 @@
 package me.physicsarebad.warps.storage;
 
 import me.physicsarebad.warps.guis.MainGUI;
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -25,17 +26,19 @@ public class SQLiteController {
 
         Connection conn = getConnection(url);
 
+        Validate.notNull(conn, "Database connection failed!");
+
         String sql;
         switch (type) {
             case PUBLIC:
             default:
-                sql = "SELECT id, creator, material, name, world_name, x, y, z, pitch, yaw, password FROM public_warps";
+                sql = "SELECT id, creator, material, name, world_name, x, y, z, pitch, yaw, password, glow FROM public_warps";
                 return getWarps(conn, sql);
             case PRIVATE:
-                sql = "SELECT id, creator, material, name, world_name, x, y, z, pitch, yaw, password FROM private_warps";
+                sql = "SELECT id, creator, material, name, world_name, x, y, z, pitch, yaw, password, glow FROM private_warps";
                 return getWarps(conn, sql);
             case SERVER:
-                sql = "SELECT id, creator, material, name, world_name, x, y, z, pitch, yaw, password FROM server_warps";
+                sql = "SELECT id, creator, material, name, world_name, x, y, z, pitch, yaw, password, glow FROM server_warps";
                 return getWarps(conn, sql);
         }
     }
@@ -63,7 +66,8 @@ public class SQLiteController {
                         Material.matchMaterial(rs.getString("material")),
                         rs.getString("name"),
                         loc,
-                        rs.getString("password"));
+                        rs.getString("password"),
+                        rs.getBoolean("glow"));
 
                 warps.add(warp);
             }
@@ -73,18 +77,24 @@ public class SQLiteController {
             System.out.println(e.getMessage());
         } finally {
             try {
+                Validate.notNull(rs);
                 rs.close();
             } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
 
             try {
+                Validate.notNull(stmt);
                 stmt.close();
             } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
 
             try {
+                Validate.notNull(conn);
                 conn.close();
             } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
         }
 
@@ -102,32 +112,38 @@ public class SQLiteController {
                 + "	material text NOT NULL,\n"
                 + "	name text NOT NULL,\n"
                 + "	world_name text NOT NULL,\n"
-                + "	x integer,\n"
-                + "	y integer,\n"
-                + "	z integer,\n"
-                + "	pitch float,\n"
-                + "	yaw float,\n"
-                + "	password text\n"
+                + "	x integer NOT NULL,\n"
+                + "	y integer NOT NULL,\n"
+                + "	z integer NOT NULL,\n"
+                + "	pitch float NOT NULL,\n"
+                + "	yaw float NOT NULL,\n"
+                + "	password text,\n"
+                + "	glow bool NOT NULL\n"
                 + ");";
 
         Connection conn = null;
         Statement stmt = null;
-        try  {
+        try {
             // create a new table
             conn = getConnection(url);
+            Validate.notNull(conn);
             stmt = conn.createStatement();
             stmt.execute(sql);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         } finally {
             try {
+                Validate.notNull(stmt);
                 stmt.close();
             } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
 
             try {
+                Validate.notNull(conn);
                 conn.close();
             } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -137,11 +153,12 @@ public class SQLiteController {
         String url = "jdbc:sqlite:" + fileName.getAbsolutePath();
 
         Connection conn = getConnection(url);
+        Validate.notNull(conn);
 
         String sql;
         switch (type) {
             case PUBLIC:
-                sql = "INSERT INTO public_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password) VALUES(?,?,?,?,?,?,?,?,?,?)";
+                sql = "INSERT INTO public_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
 
                 addWarp(conn,
                         warp.getCreator().getUniqueId().toString(),
@@ -154,10 +171,11 @@ public class SQLiteController {
                         warp.getWarpLocation().getPitch(),
                         warp.getWarpLocation().getYaw(),
                         warp.getPassword(),
+                        warp.getGlow(),
                         sql);
 
             case PRIVATE:
-                sql = "INSERT INTO private_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password) VALUES(?,?,?,?,?,?,?,?,?,?)";
+                sql = "INSERT INTO private_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
 
                 addWarp(conn,
                         warp.getCreator().getUniqueId().toString(),
@@ -170,9 +188,10 @@ public class SQLiteController {
                         warp.getWarpLocation().getPitch(),
                         warp.getWarpLocation().getYaw(),
                         warp.getPassword(),
+                        warp.getGlow(),
                         sql);
             case SERVER:
-                sql = "INSERT INTO server_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password) VALUES(?,?,?,?,?,?,?,?,?,?)";
+                sql = "INSERT INTO server_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
 
                 addWarp(conn,
                         warp.getCreator().getUniqueId().toString(),
@@ -185,6 +204,7 @@ public class SQLiteController {
                         warp.getWarpLocation().getPitch(),
                         warp.getWarpLocation().getYaw(),
                         warp.getPassword(),
+                        warp.getGlow(),
                         sql);
         }
     }
@@ -200,6 +220,7 @@ public class SQLiteController {
                                 float pitch,
                                 float yaw,
                                 String password,
+                                boolean glow,
                                 String sql) {
         PreparedStatement pstmt = null;
         try  {
@@ -214,26 +235,29 @@ public class SQLiteController {
             pstmt.setFloat(8, pitch);
             pstmt.setFloat(9, yaw);
             pstmt.setString(10, password);
+            pstmt.setBoolean(11, glow);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         } finally {
             try {
+                Validate.notNull(pstmt);
                 pstmt.close();
             } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
 
             try {
                 conn.close();
             } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
         }
     }
 
     static Connection getConnection(String url) {
         try  {
-            Connection conn = DriverManager.getConnection(url);
-            return conn;
+            return DriverManager.getConnection(url);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }

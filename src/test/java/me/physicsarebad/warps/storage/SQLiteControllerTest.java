@@ -1,5 +1,6 @@
 package me.physicsarebad.warps.storage;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
 import org.junit.Test;
 
@@ -27,6 +28,9 @@ public class SQLiteControllerTest {
         SQLiteController.init(database);
 
         Connection connection = SQLiteController.getConnection("jdbc:sqlite:" + database.getAbsolutePath());
+
+        Validate.notNull(connection);
+
         SQLiteController.addWarp(connection, "test",
                 Material.ACACIA_BUTTON.toString(),
                 "Test",
@@ -37,15 +41,18 @@ public class SQLiteControllerTest {
                 0f,
                 0f,
                 "Password123",
-                "INSERT INTO public_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password) VALUES(?,?,?,?,?,?,?,?,?,?)");
+                true,
+                "INSERT INTO public_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
 
         connection = SQLiteController.getConnection("jdbc:sqlite:" + database.getAbsolutePath());
+
+        Validate.notNull(connection);
 
         Statement stmt = null;
         ResultSet rs = null;
         try {
             stmt  = connection.createStatement();
-            rs = stmt.executeQuery("SELECT id, creator, material, name, world_name, x, y, z, pitch, yaw, password FROM public_warps");
+            rs = stmt.executeQuery("SELECT id, creator, material, name, world_name, x, y, z, pitch, yaw, password, glow FROM public_warps");
 
             rs.next();
 
@@ -55,22 +62,29 @@ public class SQLiteControllerTest {
 
             assertEquals("Password is not the same", "Password123", rs.getString("password"));
 
+            assertTrue("Glow is not the same", rs.getBoolean("glow"));
+
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         } finally {
             try {
+                Validate.notNull(rs);
                 rs.close();
             } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
 
             try {
+                Validate.notNull(stmt);
                 stmt.close();
             } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
 
             try {
                 connection.close();
             } catch (Exception e) {
+                System.out.println(e.getMessage());
             }
         }
 
