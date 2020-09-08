@@ -62,7 +62,8 @@ public class SQLiteController {
                         rs.getFloat("yaw"));
 
                 Warp warp = new Warp(
-                  Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("creator"))),
+                        rs.getInt("id"),
+                        Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("creator"))),
                         Material.matchMaterial(rs.getString("material")),
                         rs.getString("name"),
                         loc,
@@ -158,9 +159,10 @@ public class SQLiteController {
         String sql;
         switch (type) {
             case PUBLIC:
-                sql = "INSERT INTO public_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+                sql = "INSERT INTO public_warps(id,creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
 
                 addWarp(conn,
+                        warp.getId(),
                         warp.getCreator().getUniqueId().toString(),
                         warp.getMaterial().toString(),
                         warp.getName(),
@@ -175,9 +177,10 @@ public class SQLiteController {
                         sql);
 
             case PRIVATE:
-                sql = "INSERT INTO private_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+                sql = "INSERT INTO private_warps(id,creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
 
                 addWarp(conn,
+                        warp.getId(),
                         warp.getCreator().getUniqueId().toString(),
                         warp.getMaterial().toString(),
                         warp.getName(),
@@ -191,9 +194,10 @@ public class SQLiteController {
                         warp.getGlow(),
                         sql);
             case SERVER:
-                sql = "INSERT INTO server_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+                sql = "INSERT INTO server_warps(id,creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
 
                 addWarp(conn,
+                        warp.getId(),
                         warp.getCreator().getUniqueId().toString(),
                         warp.getMaterial().toString(),
                         warp.getName(),
@@ -210,6 +214,7 @@ public class SQLiteController {
     }
 
     static void addWarp(Connection conn,
+                                int id,
                                 String creatorUUID,
                                 String material,
                                 String name,
@@ -225,17 +230,17 @@ public class SQLiteController {
         PreparedStatement pstmt = null;
         try  {
             pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, creatorUUID);
-            pstmt.setString(2, material);
-            pstmt.setString(3, name);
-            pstmt.setString(4, worldName);
-            pstmt.setInt(5, x);
-            pstmt.setInt(6, y);
-            pstmt.setInt(7, z);
-            pstmt.setFloat(8, pitch);
-            pstmt.setFloat(9, yaw);
-            pstmt.setString(10, password);
-            pstmt.setBoolean(11, glow);
+            pstmt.setString(2, creatorUUID);
+            pstmt.setString(3, material);
+            pstmt.setString(4, name);
+            pstmt.setString(5, worldName);
+            pstmt.setInt(6, x);
+            pstmt.setInt(7, y);
+            pstmt.setInt(8, z);
+            pstmt.setFloat(9, pitch);
+            pstmt.setFloat(10, yaw);
+            pstmt.setString(11, password);
+            pstmt.setBoolean(12, glow);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -251,6 +256,168 @@ public class SQLiteController {
                 conn.close();
             } catch (Exception e) {
                 System.out.println(e.getMessage());
+            }
+        }
+    }
+
+    public static void delete(int id, File file, MainGUI.WarpType type) {
+        // SQLite connection string
+        String url = "jdbc:sqlite:" + file.getAbsolutePath();
+
+        String sql = "";
+
+        switch (type) {
+            case PRIVATE:
+                sql = "DELETE FROM private_warps WHERE id = ?";
+                break;
+            case PUBLIC:
+                sql = "DELETE FROM public_warps WHERE id = ?";
+                break;
+            case SERVER:
+                sql = "DELETE FROM server_warps WHERE id = ?";
+                break;
+        }
+
+        Connection conn = getConnection(url);
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            // set the corresponding param
+            pstmt.setInt(1, id);
+            // execute the delete statement
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        } finally {
+            try {
+                pstmt.close();
+            } catch (Exception e) {
+
+            }
+
+            try {
+                conn.close();
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+    public static void update(MainGUI.WarpType type, Warp warp, int id, File file) {
+        switch (type) {
+            case PUBLIC:
+                update(file,
+                        id,
+                        warp.getCreator().getUniqueId().toString(),
+                        warp.getMaterial().toString(),
+                        warp.getName(),
+                        warp.getWarpLocation().getWorld().getName(),
+                        warp.getWarpLocation().getBlockX(),
+                        warp.getWarpLocation().getBlockY(),
+                        warp.getWarpLocation().getBlockZ(),
+                        warp.getWarpLocation().getPitch(),
+                        warp.getWarpLocation().getYaw(),
+                        warp.getPassword(),
+                        warp.getGlow(),
+                        "public_warps");
+                break;
+            case SERVER:
+                update(file,
+                        id,
+                        warp.getCreator().getUniqueId().toString(),
+                        warp.getMaterial().toString(),
+                        warp.getName(),
+                        warp.getWarpLocation().getWorld().getName(),
+                        warp.getWarpLocation().getBlockX(),
+                        warp.getWarpLocation().getBlockY(),
+                        warp.getWarpLocation().getBlockZ(),
+                        warp.getWarpLocation().getPitch(),
+                        warp.getWarpLocation().getYaw(),
+                        warp.getPassword(),
+                        warp.getGlow(),
+                        "server_warps");
+                break;
+            case PRIVATE:
+                update(file,
+                        id,
+                        warp.getCreator().getUniqueId().toString(),
+                        warp.getMaterial().toString(),
+                        warp.getName(),
+                        warp.getWarpLocation().getWorld().getName(),
+                        warp.getWarpLocation().getBlockX(),
+                        warp.getWarpLocation().getBlockY(),
+                        warp.getWarpLocation().getBlockZ(),
+                        warp.getWarpLocation().getPitch(),
+                        warp.getWarpLocation().getYaw(),
+                        warp.getPassword(),
+                        warp.getGlow(),
+                        "private_warps");
+        }
+    }
+
+    static void update(File file,
+                              int id,
+                              String creatorUUID,
+                              String material,
+                              String name,
+                              String worldName,
+                              int x,
+                              int y,
+                              int z,
+                              float pitch,
+                              float yaw,
+                              String password,
+                              boolean glow,
+                              String tableName) {
+        // SQLite connection string
+        String url = "jdbc:sqlite:" + file.getAbsolutePath();
+
+        String sql = "UPDATE " + tableName + " SET creator = ? , "
+                + "material = ?, "
+                + "name = ?, "
+                + "world_name = ?, "
+                + "x = ?, "
+                + "y = ?, "
+                + "z = ?, "
+                + "pitch = ?, "
+                + "yaw = ?, "
+                + "password = ?, "
+                + "glow = ? "
+                + "WHERE id = ?";
+
+        Connection conn = getConnection(url);
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            // set the corresponding param
+            pstmt.setString(1, creatorUUID);
+            pstmt.setString(2, material);
+            pstmt.setString(3, name);
+            pstmt.setString(4, worldName);
+            pstmt.setInt(5, x);
+            pstmt.setInt(6, y);
+            pstmt.setInt(7, z);
+            pstmt.setFloat(8, pitch);
+            pstmt.setFloat(9, yaw);
+            pstmt.setString(10, password);
+            pstmt.setBoolean(11, glow);
+            pstmt.setInt(12, id);
+            // update
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        } finally {
+            try {
+                pstmt.close();
+            } catch (Exception e) {
+
+            }
+
+            try {
+                conn.close();
+            } catch (Exception e) {
+
             }
         }
     }

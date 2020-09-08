@@ -1,6 +1,8 @@
 package me.physicsarebad.warps;
 
+import me.physicsarebad.warps.commands.AddWarpCommand;
 import me.physicsarebad.warps.commands.WarpCommand;
+import me.physicsarebad.warps.guis.EditWarpMenu;
 import me.physicsarebad.warps.guis.MainGUI;
 import me.physicsarebad.warps.guis.WarpMenu;
 import me.physicsarebad.warps.storage.SQLiteController;
@@ -22,6 +24,7 @@ public final class Warps extends JavaPlugin {
 
     private MainGUI mainGUI;
     private HashMap<MainGUI.WarpType, WarpMenu> menus = new HashMap<>();
+    private EditWarpMenu editWarpMenu;
 
     @Override
     public void onEnable() {
@@ -41,6 +44,7 @@ public final class Warps extends JavaPlugin {
         }
 
         mainGUI = new MainGUI();
+        editWarpMenu = new EditWarpMenu();
         for (MainGUI.WarpType type : MainGUI.WarpType.values()) {
             menus.put(type, new WarpMenu(type));
         }
@@ -52,6 +56,7 @@ public final class Warps extends JavaPlugin {
         }
 
         getCommand("warps").setExecutor(new WarpCommand());
+        getCommand("addwarp").setExecutor(new AddWarpCommand());
     }
 
     @Override

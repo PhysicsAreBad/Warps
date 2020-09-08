@@ -7,3 +7,4 @@ description: Demo warps plugin for Senior Team
 commands:
   warps:
     aliases: [warp]
+  addwarp:

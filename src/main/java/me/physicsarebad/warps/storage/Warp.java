@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Warp {
+    private int id;
     private OfflinePlayer creator;
     private Material mat;
     private String name;
@@ -19,7 +20,8 @@ public class Warp {
     private String password;
     private boolean glow;
 
-    public Warp(OfflinePlayer creator, Material mat, String name, Location warpLoc, String password, boolean glow) {
+    public Warp(int id, OfflinePlayer creator, Material mat, String name, Location warpLoc, String password, boolean glow) {
+        this.id = id;
         this.creator = creator;
         this.mat = mat;
         this.name = name;
@@ -59,5 +61,33 @@ public class Warp {
 
     public boolean getGlow() {
         return glow;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setCreator(OfflinePlayer creator) {
+        this.creator = creator;
+    }
+
+    public void setWarpLocation(Location loc) {
+        warpLoc = loc;
+    }
+
+    public void setMaterial(Material mat) {
+        this.mat = mat;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setGlow(boolean glow) {
+        this.glow = glow;
     }
 }
