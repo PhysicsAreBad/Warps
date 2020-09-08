@@ -3,6 +3,7 @@ package me.physicsarebad.warps;
 import me.physicsarebad.warps.commands.WarpCommand;
 import me.physicsarebad.warps.guis.MainGUI;
 import me.physicsarebad.warps.guis.WarpMenu;
+import me.physicsarebad.warps.storage.SQLiteController;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
@@ -15,6 +16,7 @@ public final class Warps extends JavaPlugin {
     private static Warps instance;
 
     private FileConfiguration messages;
+    private File databaseFile = new File(getDataFolder() +System.getProperty("file.separator")+"warps.db");
 
     private MainGUI mainGUI;
     private HashMap<MainGUI.WarpType, WarpMenu> menus = new HashMap<>();
@@ -30,6 +32,10 @@ public final class Warps extends JavaPlugin {
             messages = YamlConfiguration.loadConfiguration(messageFile);
         } else {
             messages = YamlConfiguration.loadConfiguration(getTextResource("messages.yml"));
+        }
+
+        if (!databaseFile.exists()) {
+            SQLiteController.init(databaseFile);
         }
 
         mainGUI = new MainGUI();
