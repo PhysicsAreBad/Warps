@@ -95,7 +95,7 @@ public class WarpMenu implements Listener {
                     }
                     break;
                 case 52:
-                    if (pageMap.get(e.getWhoClicked())*51 < warpList.size()) {
+                    if (!isPageLast(pageMap.get(e.getWhoClicked()), warpList.size())) {
                         updateInventory(e.getWhoClicked(), pageMap.get(e)+1);
                     }
                     break;
@@ -112,6 +112,14 @@ public class WarpMenu implements Listener {
             pageMap.remove(e.getPlayer());
             inventoryMap.remove(e.getPlayer());
         }
+    }
+
+    static boolean isPageLast(int currentPage, int maxValue) {
+        maxValue--;
+        if ((currentPage+1)*51 <= (maxValue + (51-(maxValue % 51)))) {
+            return false;
+        }
+        return true;
     }
 
 }
