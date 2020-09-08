@@ -45,7 +45,7 @@ public class SQLiteControllerTest {
                 0f,
                 "Password123",
                 true,
-                "INSERT INTO public_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+                "INSERT INTO public_warps(id,creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
 
         connection = SQLiteController.getConnection("jdbc:sqlite:" + database.getAbsolutePath());
 
@@ -116,7 +116,7 @@ public class SQLiteControllerTest {
                 0f,
                 "Password123",
                 true,
-                "INSERT INTO public_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+                "INSERT INTO public_warps(id,creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
 
         connection = SQLiteController.getConnection("jdbc:sqlite:" + database.getAbsolutePath());
 
@@ -196,7 +196,7 @@ public class SQLiteControllerTest {
                 0f,
                 "Password123",
                 true,
-                "INSERT INTO public_warps(creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+                "INSERT INTO public_warps(id,creator,material,name,world_name,x,y,z,pitch,yaw,password,glow) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
 
 
         connection = SQLiteController.getConnection("jdbc:sqlite:" + database.getAbsolutePath());
