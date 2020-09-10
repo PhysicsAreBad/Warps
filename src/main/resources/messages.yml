@@ -1,6 +1,11 @@
 prefix: 'Warps >> '
 
 must-be-player: 'You must be a player to use this command!'
-no-permission: ''
+no-permission: 'You do not have permission to use this command!'
 
+send-password: 'Please type the password for this warp in chat.'
 wrong-password: 'That is the incorrect password!'
+
+toggle-name: 'Please type the name of the warp you would like to use in the chat.'
+toggle-password: 'Please type the password of the warp you would like to use in the chat.'
+created-warp: 'Your warp has been created!'

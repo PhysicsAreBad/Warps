@@ -1,7 +1,10 @@
 package me.physicsarebad.warps.guis;
 
 import me.physicsarebad.warps.Utils.items.ItemCrafter;
+import me.physicsarebad.warps.Utils.messages.MessageType;
+import me.physicsarebad.warps.Utils.messages.MessageUtil;
 import me.physicsarebad.warps.Warps;
+import me.physicsarebad.warps.storage.SQLiteController;
 import me.physicsarebad.warps.storage.Warp;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -12,6 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.Inventory;
 
 import java.util.HashMap;
@@ -23,6 +27,8 @@ public class WarpMenu implements Listener {
 
     private final HashMap<HumanEntity, Integer> pageMap = new HashMap<>();
     private final HashMap<HumanEntity, Inventory> inventoryMap = new HashMap<>();
+
+    private final HashMap<HumanEntity, Warp> passwordMap = new HashMap<>();
 
     private List<Warp> warpList;
 
@@ -53,6 +59,12 @@ public class WarpMenu implements Listener {
 
         for (int i = 0; i < 51; i++) {
             inv.setItem(i, warpList.get(i).getDisplayItem((Player) e));
+        }
+
+        for (int i = 0; i < 51; i++) {
+            if (inv.getItem(i) == null) {
+                inv.setItem(i, ItemCrafter.getItem(Material.GRAY_STAINED_GLASS_PANE, " "));
+            }
         }
 
         inventoryMap.put(e, inv);
@@ -110,6 +122,20 @@ public class WarpMenu implements Listener {
                             if (warp.getPassword().equals(null)) {
                                 e.getWhoClicked().closeInventory();
                                 e.getWhoClicked().teleport(warp.getWarpLocation());
+                            } else {
+                                passwordMap.put(e.getWhoClicked(), warp);
+                                e.getWhoClicked().closeInventory();
+                                e.getWhoClicked().sendMessage(MessageUtil.getMessage(MessageType.REQUEST_PASSWORD));
+                            }
+                        } else if (e.isRightClick() && e.isShiftClick()) {
+                            Warp warp = warpList.get(pageMap.get(e.getWhoClicked()) * 51 + e.getRawSlot());
+                            if (warp.getCreator().getUniqueId() == e.getWhoClicked().getUniqueId()) {
+                                Warps.getInstance().getEditMenu().openInventory(e.getWhoClicked(), warp, false);
+                            }
+                        } else if (e.isRightClick()) {
+                            Warp warp = warpList.get(pageMap.get(e.getWhoClicked()) * 51 + e.getRawSlot());
+                            if (warp.getCreator().getUniqueId() == e.getWhoClicked().getUniqueId()) {
+                                SQLiteController.delete(warp.getId(), Warps.getInstance().getDatabaseFile(), type);
                             }
                         }
                     }
@@ -122,6 +148,22 @@ public class WarpMenu implements Listener {
         if (e.getView().getTitle().equals(type.name+"Warps")) {
             pageMap.remove(e.getPlayer());
             inventoryMap.remove(e.getPlayer());
+        }
+    }
+
+    @EventHandler
+    public void onChat(AsyncPlayerChatEvent e) {
+        if (passwordMap.containsKey(e.getPlayer())) {
+
+            Warp warp = passwordMap.get(e.getPlayer());
+            passwordMap.remove(e.getPlayer());
+
+            String password = e.getMessage().trim();
+            if (password.equals(warp.getPassword())) {
+                e.getPlayer().teleport(warp.getWarpLocation());
+            } else {
+                e.getPlayer().sendMessage(MessageUtil.getMessage(MessageType.INCORRECT_PASSWORD));
+            }
         }
     }
 

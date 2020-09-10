@@ -83,4 +83,12 @@ public final class Warps extends JavaPlugin {
     public List<Warp> getWarps(MainGUI.WarpType type) {
         return SQLiteController.getWarps(type, databaseFile);
     }
+
+    public EditWarpMenu getEditMenu() {
+        return editWarpMenu;
+    }
+
+    public File getDatabaseFile() {
+        return databaseFile;
+    }
 }
