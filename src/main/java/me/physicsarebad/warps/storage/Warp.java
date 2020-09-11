@@ -36,7 +36,7 @@ public class Warp {
             lore.add(ChatColor.GREEN + "Shift Right Click to Edit");
         }
         lore.add(ChatColor.DARK_PURPLE+"Left Click to teleport");
-        return ItemCrafter.getItem(mat, 1, name, null, glow);
+        return ItemCrafter.getItem(mat, 1, ChatColor.YELLOW+name, lore, glow);
     }
 
     public OfflinePlayer getCreator() {

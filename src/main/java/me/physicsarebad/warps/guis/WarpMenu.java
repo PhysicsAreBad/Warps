@@ -57,7 +57,7 @@ public class WarpMenu implements Listener {
         inv.setItem(52, ItemCrafter.getItem(Material.PURPLE_STAINED_GLASS_PANE, ChatColor.LIGHT_PURPLE+""+ChatColor.BOLD+"Next Page >"));
         inv.setItem(53, ItemCrafter.getItem(Material.BARRIER, ChatColor.RED+""+ChatColor.BOLD+"Back"));
 
-        for (int i = 0; i < 51; i++) {
+        for (int i = 0; i < warpList.size(); i++) {
             inv.setItem(i, warpList.get(i).getDisplayItem((Player) e));
         }
 
@@ -83,7 +83,7 @@ public class WarpMenu implements Listener {
         inv.setItem(52, ItemCrafter.getItem(Material.PURPLE_STAINED_GLASS_PANE, ChatColor.LIGHT_PURPLE+""+ChatColor.BOLD+"Next Page >"));
         inv.setItem(53, ItemCrafter.getItem(Material.BARRIER, ChatColor.RED+""+ChatColor.BOLD+"Back"));
 
-        for (int i = 51*page; i <51*(page+1); i++) {
+        for (int i = 51*page; i <51*(page)+warpList.size(); i++) {
             inv.addItem(warpList.get(i).getDisplayItem((Player) e));
         }
 
@@ -119,7 +119,7 @@ public class WarpMenu implements Listener {
                     if (inventoryMap.get(e.getWhoClicked()).getItem(e.getRawSlot()).getType() != Material.GRAY_STAINED_GLASS_PANE) {
                         if (e.isLeftClick()) {
                             Warp warp = warpList.get(pageMap.get(e.getWhoClicked()) * 51 + e.getRawSlot());
-                            if (warp.getPassword().equals(null)) {
+                            if (warp.getPassword() == null) {
                                 e.getWhoClicked().closeInventory();
                                 e.getWhoClicked().teleport(warp.getWarpLocation());
                             } else {
@@ -155,6 +155,8 @@ public class WarpMenu implements Listener {
     public void onChat(AsyncPlayerChatEvent e) {
         if (passwordMap.containsKey(e.getPlayer())) {
 
+            e.setCancelled(true);
+
             Warp warp = passwordMap.get(e.getPlayer());
             passwordMap.remove(e.getPlayer());
 
@@ -169,6 +171,7 @@ public class WarpMenu implements Listener {
 
     static boolean isPageLast(int currentPage, int maxValue) {
         maxValue--;
+        System.out.println((maxValue + (51-(maxValue % 51))));
         if ((currentPage+1)*51 <= (maxValue + (51-(maxValue % 51)))) {
             return false;
         }

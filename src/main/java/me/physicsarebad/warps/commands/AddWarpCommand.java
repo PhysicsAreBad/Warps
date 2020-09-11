@@ -13,7 +13,11 @@ public class AddWarpCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player) {
-            Warp warp = new Warp(Warps.getInstance().getWarps(MainGUI.WarpType.PUBLIC).get(Warps.getInstance().getWarps(MainGUI.WarpType.PUBLIC).size() - 1).getId() + 1,
+            int id = 0;
+            if (Warps.getInstance().getWarps(MainGUI.WarpType.PUBLIC).size() != 0) {
+                id = Warps.getInstance().getWarps(MainGUI.WarpType.PUBLIC).get(Warps.getInstance().getWarps(MainGUI.WarpType.PUBLIC).size() - 1).getId() + 1;
+            }
+            Warp warp = new Warp(id,
                     ((Player) sender),
                     Material.BARRIER,
                     sender.getName()+"'s Warp",

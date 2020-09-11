@@ -7,6 +7,7 @@ public enum MessageType {
     INCORRECT_PASSWORD("wrong-password"),
     TOGGLE_NAME("toggle-name"),
     TOGGLE_PASSWORD("toggle-password"),
+    NEED_PASSWORD("need-password"),
     CREATED_WARP("created-warp");
 
     private String path;

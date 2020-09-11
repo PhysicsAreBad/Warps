@@ -230,6 +230,7 @@ public class SQLiteController {
         PreparedStatement pstmt = null;
         try  {
             pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, id);
             pstmt.setString(2, creatorUUID);
             pstmt.setString(3, material);
             pstmt.setString(4, name);

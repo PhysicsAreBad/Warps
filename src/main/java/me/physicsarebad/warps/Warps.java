@@ -13,6 +13,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -37,6 +38,11 @@ public final class Warps extends JavaPlugin {
             messages = YamlConfiguration.loadConfiguration(messageFile);
         } else {
             messages = YamlConfiguration.loadConfiguration(getTextResource("messages.yml"));
+            try {
+                messages.save(messageFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         if (!databaseFile.exists()) {
@@ -51,6 +57,7 @@ public final class Warps extends JavaPlugin {
 
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(mainGUI, this);
+        pm.registerEvents(editWarpMenu, this);
         for (MainGUI.WarpType type : MainGUI.WarpType.values()) {
             pm.registerEvents(menus.get(type), this);
         }
