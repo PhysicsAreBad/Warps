@@ -2,7 +2,7 @@
 Demo Plugin for Senior Team
 
 # Permissions:
-warp.admin - Use of the Server catagory, edit any warp, and unlimited warps
+warp.admin - Use of the Server catagory, edit any warp, and unlimited warps <br>
 warp.amount.n - Lets one create n amount warps
 
 <br>
