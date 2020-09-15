@@ -1,7 +1,8 @@
-prefix: 'Warps >> '
+prefix: '&a&lWarps &r&a>> '
 
 must-be-player: 'You must be a player to use this command!'
 no-permission: 'You do not have permission to use this command!'
+too-many-warps: 'You have made the maximum amount of warps alloted to you!'
 
 send-password: 'Please type the password for this warp in chat.'
 wrong-password: 'That is the incorrect password!'
@@ -10,3 +11,5 @@ toggle-name: 'Please type the name of the warp you would like to use in the chat
 toggle-password: 'Please type the password of the warp you would like to use in the chat.'
 need-password: 'You need to create a password for this type of warp!'
 created-warp: 'Your warp has been created!'
+
+teleport: 'You have been teleported!'

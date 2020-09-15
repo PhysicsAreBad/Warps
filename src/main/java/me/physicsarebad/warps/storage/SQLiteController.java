@@ -1,10 +1,10 @@
 package me.physicsarebad.warps.storage;
 
 import me.physicsarebad.warps.guis.MainGUI;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 
 import java.io.File;
 import java.sql.*;
@@ -14,10 +14,16 @@ import java.util.UUID;
 
 public class SQLiteController {
 
+    private static String[] tables = {
+            "public_warps",
+            "private_warps",
+            "server_warps"
+    };
+
     public static void init(File fileName) {
-        createNewTable("public_warps", fileName.getAbsolutePath());
-        createNewTable("private_warps", fileName.getAbsolutePath());
-        createNewTable("server_warps", fileName.getAbsolutePath());
+        for (String s : tables) {
+            createNewTable(s, fileName.getAbsolutePath());
+        }
     }
 
     public static List<Warp> getWarps(MainGUI.WarpType type, File file) {
@@ -25,8 +31,6 @@ public class SQLiteController {
         String url = "jdbc:sqlite:" + file.getAbsolutePath();
 
         Connection conn = getConnection(url);
-
-        Validate.notNull(conn, "Database connection failed!");
 
         String sql;
         switch (type) {
@@ -78,24 +82,21 @@ public class SQLiteController {
             System.out.println(e.getMessage());
         } finally {
             try {
-                Validate.notNull(rs);
                 rs.close();
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
             }
 
             try {
-                Validate.notNull(stmt);
                 stmt.close();
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
             }
 
             try {
-                Validate.notNull(conn);
                 conn.close();
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
             }
         }
 
@@ -109,17 +110,17 @@ public class SQLiteController {
         // SQL statement for creating a new table
         String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (\n"
                 + "	id integer PRIMARY KEY,\n"
-                + "	creator text NOT NULL,\n"
-                + "	material text NOT NULL,\n"
-                + "	name text NOT NULL,\n"
-                + "	world_name text NOT NULL,\n"
-                + "	x integer NOT NULL,\n"
-                + "	y integer NOT NULL,\n"
-                + "	z integer NOT NULL,\n"
-                + "	pitch float NOT NULL,\n"
-                + "	yaw float NOT NULL,\n"
+                + "	creator text ,\n"
+                + "	material text ,\n"
+                + "	name text ,\n"
+                + "	world_name text ,\n"
+                + "	x integer ,\n"
+                + "	y integer ,\n"
+                + "	z integer ,\n"
+                + "	pitch float ,\n"
+                + "	yaw float ,\n"
                 + "	password text,\n"
-                + "	glow bool NOT NULL\n"
+                + "	glow bool \n"
                 + ");";
 
         Connection conn = null;
@@ -127,21 +128,18 @@ public class SQLiteController {
         try {
             // create a new table
             conn = getConnection(url);
-            Validate.notNull(conn);
             stmt = conn.createStatement();
             stmt.execute(sql);
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         } finally {
             try {
-                Validate.notNull(stmt);
                 stmt.close();
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
 
             try {
-                Validate.notNull(conn);
                 conn.close();
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -154,7 +152,6 @@ public class SQLiteController {
         String url = "jdbc:sqlite:" + fileName.getAbsolutePath();
 
         Connection conn = getConnection(url);
-        Validate.notNull(conn);
 
         String sql;
         switch (type) {
@@ -244,19 +241,18 @@ public class SQLiteController {
             pstmt.setBoolean(12, glow);
             pstmt.executeUpdate();
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            //System.out.println(e.getMessage());
         } finally {
             try {
-                Validate.notNull(pstmt);
                 pstmt.close();
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
             }
 
             try {
                 conn.close();
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
             }
         }
     }
@@ -421,6 +417,53 @@ public class SQLiteController {
 
             }
         }
+    }
+
+    public static int getPlayerWarps(OfflinePlayer player, File file) {
+        // SQLite connection string
+        String url = "jdbc:sqlite:" + file.getAbsolutePath();
+
+        int amount = 0;
+
+
+
+        for (String table : tables) {
+            String sql = "SELECT * FROM "+ table + " WHERE creator = '" + player.getUniqueId().toString()+"'";
+            sql.trim();
+
+            Connection conn = getConnection(url);
+            ResultSet rs = null;
+            Statement stmt = null;
+            try {
+                stmt = conn.createStatement();
+                rs = stmt.executeQuery(sql);
+                while (rs.next()) {
+                    amount++;
+                }
+            } catch (Exception e) {
+                System.out.println(e);
+            } finally {
+                try {
+                    rs.close();
+                } catch (Exception e) {
+
+                }
+
+                try {
+                    stmt.close();
+                } catch (Exception e) {
+
+                }
+
+                try {
+                    conn.close();
+                } catch (Exception e) {
+
+                }
+            }
+        }
+
+        return amount;
     }
 
     static Connection getConnection(String url) {

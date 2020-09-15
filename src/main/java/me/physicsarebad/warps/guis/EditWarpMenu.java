@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -24,9 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 
 public class EditWarpMenu implements Listener {
-    private HashMap<HumanEntity, PlayerData> dataMap = new HashMap<>();
-    private List<HumanEntity> togglePassword = new ArrayList<>();
-    private List<HumanEntity> toggleName = new ArrayList<>();
+    private final HashMap<HumanEntity, PlayerData> dataMap = new HashMap<>();
+    private final List<HumanEntity> togglePassword = new ArrayList<>();
+    private final List<HumanEntity> toggleName = new ArrayList<>();
+
+    private final String adminPerm = "warps.admin";
 
     public void openInventory(HumanEntity entity, Warp warp, boolean isNew) {
         Inventory inv = Bukkit.createInventory(null, 27, "Edit Warp");
@@ -34,9 +37,10 @@ public class EditWarpMenu implements Listener {
         PlayerData data = new PlayerData(inv, warp, isNew, MainGUI.WarpType.PUBLIC);
         dataMap.put(entity, data);
 
-        updateExampleItem(data);
-        updateWarpType(data);
-
+        updateExampleItem(data, (Player) entity);
+        if (isNew) {
+            updateWarpType(data, entity.hasPermission(adminPerm));
+        }
         List<String> lore = new ArrayList<>();
         lore.add(ChatColor.YELLOW+"Click on any material in your inventory to change the icon.");
         inv.setItem(10, ItemCrafter.getItem(warp.getMaterial(), ChatColor.BLUE+""+ChatColor.BOLD+"Item Material", lore));
@@ -66,18 +70,35 @@ public class EditWarpMenu implements Listener {
             PlayerData data = dataMap.get(e.getWhoClicked());
             switch (e.getRawSlot()) {
                 case 4:
-                    int id = data.warpType.id+1;
-                    if (id > 2) {
-                        id = 0;
+                    if (data.isNew) {
+                        if (e.getWhoClicked().hasPermission(adminPerm)) {
+                            int id = data.warpType.id + 1;
+                            if (id > 2) {
+                                id = 0;
+                            }
+
+                            data.warpType = MainGUI.WarpType.values()[id];
+
+                            if (data.warpType != MainGUI.WarpType.PRIVATE) {
+                                data.warp.setPassword(null);
+                            }
+
+                            updateWarpType(data, true);
+                        } else {
+                            int id = data.warpType.id + 1;
+                            if (id > 1) {
+                                id = 0;
+                            }
+
+                            data.warpType = MainGUI.WarpType.values()[id];
+
+                            if (data.warpType != MainGUI.WarpType.PRIVATE) {
+                                data.warp.setPassword(null);
+                            }
+
+                            updateWarpType(data, true);
+                        }
                     }
-
-                    data.warpType = MainGUI.WarpType.values()[id];
-
-                    if (data.warpType != MainGUI.WarpType.PRIVATE) {
-                        data.warp.setPassword(null);
-                    }
-
-                    updateWarpType(data);
                     break;
                 case 12:
                     toggleName.add(e.getWhoClicked());
@@ -101,14 +122,17 @@ public class EditWarpMenu implements Listener {
                     }
                     e.getWhoClicked().closeInventory();
                     if (data.isNew) {
-                        SQLiteController.addWarp(data.warpType, data.warp, Warps.getInstance().getDatabaseFile());
+                        Bukkit.getScheduler().scheduleAsyncDelayedTask(Warps.getInstance(),
+                                () -> SQLiteController.addWarp(data.warpType, data.warp, Warps.getInstance().getDatabaseFile()));
                     } else {
-                        if (data.warpType == data.startWarpType) {
+                        /*if (data.warpType == data.startWarpType) { //TODO: Implement type updates
                             SQLiteController.update(data.warpType, data.warp, data.warp.getId(), Warps.getInstance().getDatabaseFile());
                         } else {
                             SQLiteController.delete(data.warp.getId(), Warps.getInstance().getDatabaseFile(), data.startWarpType);
                             SQLiteController.addWarp(data.warpType, data.warp, Warps.getInstance().getDatabaseFile());
-                        }
+                        }*/
+                        Bukkit.getScheduler().scheduleAsyncDelayedTask(Warps.getInstance(),
+                                () -> SQLiteController.update(data.warpType, data.warp, data.warp.getId(), Warps.getInstance().getDatabaseFile()));
                     }
                     e.getWhoClicked().sendMessage(MessageUtil.getMessage(MessageType.CREATED_WARP));
                     break;
@@ -125,7 +149,7 @@ public class EditWarpMenu implements Listener {
                     break;
             }
 
-            updateExampleItem(data);
+            updateExampleItem(data, (Player) e.getWhoClicked());
         }
     }
 
@@ -143,46 +167,64 @@ public class EditWarpMenu implements Listener {
             dataMap.get(e.getPlayer()).warp.setPassword(e.getMessage().trim());
             Bukkit.getScheduler().scheduleSyncDelayedTask(Warps.getInstance(), () -> e.getPlayer().openInventory(dataMap.get(e.getPlayer()).inv), 5);
             togglePassword.remove(e.getPlayer());
-            updateExampleItem(dataMap.get(e.getPlayer()));
+            updateExampleItem(dataMap.get(e.getPlayer()), e.getPlayer());
         } else if (toggleName.contains(e.getPlayer())) {
             e.setCancelled(true);
             dataMap.get(e.getPlayer()).warp.setName(e.getMessage().trim());
             Bukkit.getScheduler().scheduleSyncDelayedTask(Warps.getInstance(), () -> e.getPlayer().openInventory(dataMap.get(e.getPlayer()).inv), 5);
             toggleName.remove(e.getPlayer());
-            updateExampleItem(dataMap.get(e.getPlayer()));
+            updateExampleItem(dataMap.get(e.getPlayer()), e.getPlayer());
         }
     }
 
-    private void updateExampleItem(PlayerData data) {
-        ItemStack is = data.warp.getDisplayItem(data.warp.getCreator().getPlayer());
+    private void updateExampleItem(PlayerData data, Player viewer) {
+        ItemStack is = data.warp.getDisplayItem(viewer);
         ItemMeta im = is.getItemMeta();
         List<String> lore = new ArrayList<>();
         lore.add(ChatColor.LIGHT_PURPLE+"This is what your warp will look like!");
-        lore.add("Current Name " + data.warp.getName());
-        if (data.warp.getPassword() != null)
+        lore.add(ChatColor.GREEN+"Current Name: " + data.warp.getName());
+        if (data.warp.getPassword() != null) {
+            lore.add(ChatColor.GREEN+"Current Password: " + data.warp.getPassword());
+        } else if (data.warpType == MainGUI.WarpType.PRIVATE) {
+            lore.add(ChatColor.RED+"Set a password!");
+        }
         im.setLore(lore);
+        is.setItemMeta(im);
         data.inv.setItem(13, is);
     }
 
-    private void updateWarpType(PlayerData data) {
+    private void updateWarpType(PlayerData data, boolean isAdmin) {
         List<String> lore = new ArrayList<>();
 
-        switch (data.warpType) {
-            case PUBLIC:
-                lore.add(ChatColor.GREEN+"> Public Warp");
-                lore.add(ChatColor.GRAY+"Private Warp");
-                lore.add(ChatColor.GRAY+"Server Warp");
-                break;
-            case PRIVATE:
-                lore.add(ChatColor.GRAY+"Public Warp");
-                lore.add(ChatColor.RED+"> Private Warp");
-                lore.add(ChatColor.GRAY+"Server Warp");
-                break;
-            case SERVER:
-                lore.add(ChatColor.GRAY+"Public Warp");
-                lore.add(ChatColor.GRAY+"Private Warp");
-                lore.add(ChatColor.LIGHT_PURPLE+"> Server Warp");
-                break;
+        if (isAdmin) {
+            switch (data.warpType) {
+                case PUBLIC:
+                    lore.add(ChatColor.GREEN + "> Public Warp");
+                    lore.add(ChatColor.GRAY + "Private Warp");
+                    lore.add(ChatColor.GRAY + "Server Warp");
+                    break;
+                case PRIVATE:
+                    lore.add(ChatColor.GRAY + "Public Warp");
+                    lore.add(ChatColor.RED + "> Private Warp");
+                    lore.add(ChatColor.GRAY + "Server Warp");
+                    break;
+                case SERVER:
+                    lore.add(ChatColor.GRAY + "Public Warp");
+                    lore.add(ChatColor.GRAY + "Private Warp");
+                    lore.add(ChatColor.LIGHT_PURPLE + "> Server Warp");
+                    break;
+            }
+        } else {
+            switch (data.warpType) {
+                case PUBLIC:
+                    lore.add(ChatColor.GREEN + "> Public Warp");
+                    lore.add(ChatColor.GRAY + "Private Warp");
+                    break;
+                case PRIVATE:
+                    lore.add(ChatColor.GRAY + "Public Warp");
+                    lore.add(ChatColor.RED + "> Private Warp");
+                    break;
+            }
         }
 
         data.inv.setItem(4, ItemCrafter.getItem(Material.HOPPER, ChatColor.WHITE+""+ChatColor.BOLD+"Select Type", lore));

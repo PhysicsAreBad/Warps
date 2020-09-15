@@ -32,8 +32,9 @@ public class Warp {
 
     public ItemStack getDisplayItem(Player viewer) {
         List<String> lore = new ArrayList<>();
-        if (viewer.getUniqueId() == creator.getUniqueId()) {
+        if (viewer.hasPermission("warps.admin") || viewer.getUniqueId() == creator.getUniqueId()) {
             lore.add(ChatColor.GREEN + "Shift Right Click to Edit");
+            lore.add(ChatColor.RED + "Right Click to Delete");
         }
         lore.add(ChatColor.DARK_PURPLE+"Left Click to teleport");
         return ItemCrafter.getItem(mat, 1, ChatColor.YELLOW+name, lore, glow);
@@ -65,14 +66,6 @@ public class Warp {
 
     public int getId() {
         return id;
-    }
-
-    public void setCreator(OfflinePlayer creator) {
-        this.creator = creator;
-    }
-
-    public void setWarpLocation(Location loc) {
-        warpLoc = loc;
     }
 
     public void setMaterial(Material mat) {

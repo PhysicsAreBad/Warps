@@ -8,3 +8,6 @@ commands:
   warps:
     aliases: [warp]
   addwarp:
+permissions:
+  warps.admin:
+    default: op

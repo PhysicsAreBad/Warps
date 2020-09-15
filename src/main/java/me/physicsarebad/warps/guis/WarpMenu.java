@@ -117,25 +117,25 @@ public class WarpMenu implements Listener {
                     break;
                 default:
                     if (inventoryMap.get(e.getWhoClicked()).getItem(e.getRawSlot()).getType() != Material.GRAY_STAINED_GLASS_PANE) {
+                        Warp warp = warpList.get(pageMap.get(e.getWhoClicked()) * 51 + e.getRawSlot());
                         if (e.isLeftClick()) {
-                            Warp warp = warpList.get(pageMap.get(e.getWhoClicked()) * 51 + e.getRawSlot());
                             if (warp.getPassword() == null) {
                                 e.getWhoClicked().closeInventory();
                                 e.getWhoClicked().teleport(warp.getWarpLocation());
+                                e.getWhoClicked().sendMessage(MessageUtil.getMessage(MessageType.TELEPORT));
                             } else {
                                 passwordMap.put(e.getWhoClicked(), warp);
                                 e.getWhoClicked().closeInventory();
                                 e.getWhoClicked().sendMessage(MessageUtil.getMessage(MessageType.REQUEST_PASSWORD));
                             }
                         } else if (e.isRightClick() && e.isShiftClick()) {
-                            Warp warp = warpList.get(pageMap.get(e.getWhoClicked()) * 51 + e.getRawSlot());
-                            if (warp.getCreator().getUniqueId() == e.getWhoClicked().getUniqueId()) {
+                            if (warp.getCreator().getUniqueId() == e.getWhoClicked().getUniqueId() || e.getWhoClicked().hasPermission("warps.admin")) {
                                 Warps.getInstance().getEditMenu().openInventory(e.getWhoClicked(), warp, false);
                             }
                         } else if (e.isRightClick()) {
-                            Warp warp = warpList.get(pageMap.get(e.getWhoClicked()) * 51 + e.getRawSlot());
-                            if (warp.getCreator().getUniqueId() == e.getWhoClicked().getUniqueId()) {
+                            if (warp.getCreator().getUniqueId() == e.getWhoClicked().getUniqueId() || e.getWhoClicked().hasPermission("warps.admin")) {
                                 SQLiteController.delete(warp.getId(), Warps.getInstance().getDatabaseFile(), type);
+                                e.getWhoClicked().closeInventory();
                             }
                         }
                     }
@@ -162,7 +162,8 @@ public class WarpMenu implements Listener {
 
             String password = e.getMessage().trim();
             if (password.equals(warp.getPassword())) {
-                e.getPlayer().teleport(warp.getWarpLocation());
+                Bukkit.getScheduler().scheduleSyncDelayedTask(Warps.getInstance(), () -> e.getPlayer().teleport(warp.getWarpLocation()));
+                e.getPlayer().sendMessage(MessageUtil.getMessage(MessageType.TELEPORT));
             } else {
                 e.getPlayer().sendMessage(MessageUtil.getMessage(MessageType.INCORRECT_PASSWORD));
             }
@@ -170,9 +171,7 @@ public class WarpMenu implements Listener {
     }
 
     static boolean isPageLast(int currentPage, int maxValue) {
-        maxValue--;
-        System.out.println((maxValue + (51-(maxValue % 51))));
-        if ((currentPage+1)*51 <= (maxValue + (51-(maxValue % 51)))) {
+        if ((currentPage+1)*51 <= maxValue) {
             return false;
         }
         return true;
